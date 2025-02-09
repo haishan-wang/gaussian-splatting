@@ -5,7 +5,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --partition=gpu-a100-80g
 #SBATCH --mem=32G
-#SBATCH --output=results/0newvq/newvq_1k/log/%A_%a.log
+#SBATCH --output=results/3dgs/log/%A_%a.log
 SLURM_ARRAY_TASK_ID=1
 # * basic settings
 hostname
