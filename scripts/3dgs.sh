@@ -14,7 +14,7 @@ nvidia-smi
 source scripts/tools/basic_config.sh
 source scripts/tools/timer_start.sh
 
-# * data loading, path preparation
+# # * data loading, path preparation
 path_base=../../../data/GS
 output_base=results/3dgs
 scene_list=("garden" "bicycle" "stump" "bonsai" "counter" "kitchen" "room" "treehill" "flowers" "drjohnson" "playroom" "train" "truck")
@@ -24,21 +24,12 @@ dataset=${ds_list[SLURM_ARRAY_TASK_ID]}
 path_source="$path_base"/"$dataset"/"$scene"
 path_output="$output_base"/"$dataset"/"$scene"
 
-# * scripts to run GS model
-# * scripts to run GS model
+# # * scripts to run GS model
 CUDA_VISIBLE_DEVICES=0 python train.py --eval -s=${path_source} -m=${path_output} 
 
-
-echo '[End time]' $(date)
-export end=$(date +%s)
-export take=$(( end - start ))
-((sec=take%60, take/=60, min=take%60, hrs=take/60))
-timestamp=$(printf "%d:%02d:%02d" $hrs $min $sec)
-echo Time taken to execute commands is [$timestamp] [${take} mins].
 source scripts/tools/timer_end.sh
-
 # # * rendering
-# python render.py -m ${output_base}/$dataset/$scene 
+python render.py -m ${output_base}/$dataset/$scene -s=${path_source}  --skip_train 
 
 # # * metrics calculation
-# python metrics.py -m ${output_base}/$dataset/$scene
+python metrics.py -m ${output_base}/$dataset/$scene
