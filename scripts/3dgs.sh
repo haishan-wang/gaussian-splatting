@@ -1,12 +1,12 @@
 #!/bin/env bash
-#SBATCH --array=1
+#SBATCH --array=0-12
 #SBATCH --time=05:00:00
 #SBATCH --job-name=3dgs
 #SBATCH --gres=gpu:1
 #SBATCH --partition=gpu-a100-80g
 #SBATCH --mem=32G
-#SBATCH --output=scripts/3dgs/log/%A_%a.log
-SLURM_ARRAY_TASK_ID=1
+#SBATCH --output=results/3dgs/log/%A_%a.log
+
 # * basic settings
 hostname
 nvidia-smi
@@ -25,7 +25,7 @@ path_source="$path_base"/"$dataset"/"$scene"
 path_output="$output_base"/"$dataset"/"$scene"
 
 # # * scripts to run GS model
-CUDA_VISIBLE_DEVICES=0 python train.py --eval -s=${path_source} -m=${path_output} 
+CUDA_VISIBLE_DEVICES=0 python train.py --eval -s=${path_source} -m=${path_output}  --disable_viewer
 
 source scripts/tools/timer_end.sh
 # # * rendering
