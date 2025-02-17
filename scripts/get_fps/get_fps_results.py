@@ -25,31 +25,37 @@ import time
 def render_set(model_path, name, iteration, views, gaussians, pipeline, background, train_test_exp, separate_sh):
     counts = 0 
     time_steps = []
-    start_time = time.perf_counter()
-    time_steps.append(start_time)
     size_views = len(views)
     loop_time = int(np.ceil(1000/size_views))
     for i in range(loop_time):
         for view in views:
+            torch.cuda.synchronize()
+            start_time = time.perf_counter()
             render(view, gaussians, pipeline, background, use_trained_exp=train_test_exp, separate_sh=separate_sh)
             # gt = view.original_image[0:3, :, :]
             # print(counts)
-            counts += 1
-            time_steps.append(time.perf_counter())
-    end_time = time.perf_counter()
-    elapsed_time = end_time - start_time
-    fps = counts/elapsed_time
-    print(f'FPS: {fps:.2f}')
+            torch.cuda.synchronize()
+            end_time = time.perf_counter()
+            time_steps.append(end_time - start_time )
     
     time_steps = np.array(time_steps)
-    time_per_image = time_steps[1:] - time_steps[:-1] 
-    print(f'FPS without first figure: {1/np.mean(time_per_image[1:])}')
-    breakpoint()
+    fps = 1 / np.mean(time_steps)
+    print(f'FPS: {fps:.3f}')
+    print(f'FPS without first figure: {1/np.mean(time_steps[1:]):.3f}')
+    
+    # data = {'FPS': f'{fps:.3f}' , 'FPS-wo-1': f'{1/np.mean(time_steps[1:]):.3f}'}
+    # path_res = Path('scripts/get_fps/results.json')
+    # with path_res.open(mode='w') as f:
+    #     json.dump(data, f, indent=4)
+    
+    # fps = 
+    # breakpoint()
 
     # for idx, view in enumerate(tqdm(views, desc="Rendering progress")):
     #     rendering = render(view, gaussians, pipeline, background, use_trained_exp=train_test_exp, separate_sh=separate_sh)["render"]
 
 def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, separate_sh: bool):
+
     with torch.no_grad():
         gaussians = GaussianModel(dataset.sh_degree)
         scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False)
